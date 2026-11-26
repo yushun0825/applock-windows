@@ -116,9 +116,7 @@
                     </ItemsControl>
                     <StackPanel x:Name="EmptyState" Margin="24,28" HorizontalAlignment="Center">
                         <TextBlock Style="{StaticResource Glyph}" Text="&#xE72E;" FontSize="28" Foreground="{StaticResource LockBrush}" />
-                        <TextBlock Text="ロックするアプリはありません" Style="{StaticResource Body}" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center" Margin="0,12,0,4" />
-                        <TextBlock x:Name="EmptyText" Style="{StaticResource Caption}"
+                        <TextBlock x:Name="EmptyText" Style="{StaticResource Caption}" FontSize="13" Margin="0,12,0,0"
                                    HorizontalAlignment="Center" TextAlignment="Center" />
                     </StackPanel>
                 </Grid>

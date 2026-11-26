@@ -14,7 +14,8 @@
     <!-- 常駐する小さなアプリなので、GC は裏のスレッドを使わない -->
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <InvariantGlobalization>false</InvariantGlobalization>
-    <Title>アプリロック</Title>
+    <!-- タスク マネージャー・通知に出る名前 -->
+    <AssemblyTitle>アプリロック</AssemblyTitle>
     <Description>選んだアプリを、開くときに Windows Hello で確かめる</Description>
   </PropertyGroup>
 
@@ -27,7 +28,8 @@
   <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- WPF の小さな DLL は exe の隣に置く(起動のたびに一時フォルダへ取り出さない・消したあとに残らない) -->
+    <IncludeNativeLibrariesForSelfExtract>false</IncludeNativeLibrariesForSelfExtract>
     <!-- 圧縮しない: 部品をファイルから直接読むので、使うメモリが少なくて済む(配るときは zip で縮める) -->
     <EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
   </PropertyGroup>

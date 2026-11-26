@@ -28,8 +28,9 @@ Remove-Item -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\App
 $shortcut = Join-Path ([Environment]::GetFolderPath('Programs')) 'アプリロック.lnk'
 Remove-Item -Path $shortcut -ErrorAction SilentlyContinue
 
-# 設定と記録
+# 設定と記録(1.0.0 が一時フォルダに取り出した部品も)
 Remove-Item -Path (Join-Path $env:LOCALAPPDATA 'AppLock') -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path (Join-Path $env:TEMP '.net\AppLock') -Recurse -Force -ErrorAction SilentlyContinue
 
 # アプリ本体(このスクリプトも含む)
 Set-Location $env:TEMP

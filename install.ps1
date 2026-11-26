@@ -49,13 +49,53 @@
         New-Item -ItemType Directory -Force -Path $dir | Out-Null
         Copy-Item -Path (Join-Path $unpacked '*') -Destination $dir -Recurse -Force
 
-        # スタート メニュー
-        $shell = New-Object -ComObject WScript.Shell
-        $link = $shell.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Programs')) 'アプリロック.lnk'))
-        $link.TargetPath = $exe
-        $link.WorkingDirectory = $dir
-        $link.Description = '選んだアプリを、開くときに Windows Hello で確かめます'
-        $link.Save()
+        # スタート メニュー(WScript.Shell は日本語のファイル名を英語の Windows で保存できないので、IShellLinkW を使う)
+        Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Text;
+
+public static class AppLockShortcut
+{
+    [ComImport, Guid("000214F9-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IShellLinkW
+    {
+        void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder file, int cch, IntPtr findData, uint flags);
+        void GetIDList(out IntPtr pidl);
+        void SetIDList(IntPtr pidl);
+        void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder name, int cch);
+        void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string name);
+        void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder dir, int cch);
+        void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string dir);
+        void GetArguments([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder args, int cch);
+        void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string args);
+        void GetHotkey(out short hotkey);
+        void SetHotkey(short hotkey);
+        void GetShowCmd(out int showCmd);
+        void SetShowCmd(int showCmd);
+        void GetIconLocation([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder path, int cch, out int index);
+        void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string path, int index);
+        void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string path, uint reserved);
+        void Resolve(IntPtr hwnd, uint flags);
+        void SetPath([MarshalAs(UnmanagedType.LPWStr)] string file);
+    }
+
+    [ComImport, Guid("00021401-0000-0000-C000-000000000046")]
+    private class ShellLink { }
+
+    public static void Create(string linkPath, string target, string directory, string description)
+    {
+        var link = (IShellLinkW)new ShellLink();
+        link.SetPath(target);
+        link.SetWorkingDirectory(directory);
+        link.SetDescription(description);
+        ((IPersistFile)link).Save(linkPath, true);
+    }
+}
+'@
+        $linkPath = Join-Path ([Environment]::GetFolderPath('Programs')) 'アプリロック.lnk'
+        [AppLockShortcut]::Create($linkPath, $exe, $dir, '選んだアプリを、開くときに Windows Hello で確かめます')
 
         # 「設定」>「アプリ」(ここからアンインストールできる)
         $file = [Version](Get-Item $exe).VersionInfo.FileVersion
