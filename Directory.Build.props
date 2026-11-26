@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Authors>yushun0825</Authors>
+    <Company>yushun0825</Company>
+    <Product>アプリロック</Product>
+    <Copyright>© 2026 yushun0825</Copyright>
+    <Deterministic>true</Deterministic>
+    <DebugType>embedded</DebugType>
+    <!-- Mac や Linux からも Windows 用に組み立てられるように -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+</Project>

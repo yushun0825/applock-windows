@@ -1,0 +1,28 @@
+# 送るたびに、単体テストと Windows での組み立てを確かめる
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: 単体テスト
+        run: dotnet test tests/AppLock.Core.Tests -c Release
+
+      - name: 組み立て(x64・Arm64)
+        shell: pwsh
+        run: |
+          foreach ($rid in 'win-x64', 'win-arm64') {
+            dotnet publish src/AppLock/AppLock.csproj -c Release -r $rid -o "out/$rid"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }

@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 判断の部分。Windows の API には触らず、どの OS でも単体テストできるようにする -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>AppLock.Core</RootNamespace>
+  </PropertyGroup>
+</Project>

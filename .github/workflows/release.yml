@@ -1,0 +1,55 @@
+# v から始まるタグを送ると、Windows で組み立てて Releases に置く(x64・Arm64 の zip と SHA256SUMS.txt)
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: 単体テスト
+        run: dotnet test tests/AppLock.Core.Tests -c Release
+
+      - name: 組み立て
+        shell: pwsh
+        run: |
+          $version = '${{ github.ref_name }}'.TrimStart('v')
+          foreach ($rid in 'win-x64', 'win-arm64') {
+            dotnet publish src/AppLock/AppLock.csproj -c Release -r $rid -p:Version=$version -o "out/$rid"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            Copy-Item LICENSE, THIRD_PARTY_NOTICES.md "out/$rid/"
+            Compress-Archive -Path "out/$rid/*" -DestinationPath "AppLock-$rid.zip"
+          }
+          Get-ChildItem AppLock-*.zip | ForEach-Object {
+            "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower())  $($_.Name)"
+          } | Set-Content SHA256SUMS.txt -Encoding ascii
+          Get-Content SHA256SUMS.txt
+
+      - name: Releases に置く
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $notes = @'
+          Windows 11(x64・Arm64)用です。
+
+          PowerShell で次の 1 行を実行すると、入れる・新しい版に入れ替えることができます。
+
+          ```powershell
+          irm https://raw.githubusercontent.com/yushun0825/applock-windows/main/install.ps1 | iex
+          ```
+
+          手で入れるときは、x64 の PC は `AppLock-win-x64.zip`、Arm の PC は `AppLock-win-arm64.zip` を展開して `AppLock.exe` を開いてください。
+          '@
+          gh release create '${{ github.ref_name }}' AppLock-win-x64.zip AppLock-win-arm64.zip SHA256SUMS.txt --title "アプリロック ${{ github.ref_name }}" --notes $notes
